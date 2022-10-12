@@ -2,9 +2,7 @@ import java.util.*;
 
 char[] keyBinds = { 'a', 's', 'd', 'f', //keybinds for auto hits/misses and teleop hits/misses
                     'j', 'k', 'l', ';'};
-
-Hashtable<Character, Boolean> keys = new Hashtable<Character, Boolean>(10); //To prevent unread inputs and other bugs. First 8 match with keyBinds[], then undoBind, then resetBind
-Hashtable<Character, Boolean> prevKeys = new Hashtable<Character, Boolean>(10); //to keep track of the key presses from the last frame
+boolean[][] keysPressed = new boolean[10][2]; //keeps track of the keys pressed over the last two frames
 String[] names = {"HIGH HIT", "HIGH MISS", "LOW HIT", "LOW MISS"};
 char undoBind = 'z'; //keybind to remove 1 from the button last updated
 char resetBind = '`'; //keybind to reset all buttons to 0
@@ -25,19 +23,6 @@ void setup(){
   //fullScreen();
   size(1200, 800);
   frameRate(240);
-
-  for(int i = 0; i < 10; i++){
-    if(i < keyBinds.length){
-      keys.put(keyBinds[i], false);
-    } else {
-      if(i == keyBinds.length){
-        keys.put(undoBind, false);
-      } else {
-        keys.put(resetBind, false);
-      }
-    }
-  }
-  prevKeys = new Hashtable<Character, Boolean>(keys);
   
   int padding = 45;
   int x = padding;
@@ -71,24 +56,28 @@ void draw(){
   if(resetButton.getCounter() > 0){
     setup();
   }
-  
-  Enumeration<Character> keysEnum = keys.keys();
-  Enumeration<Character> prevKeysEnum = prevKeys.keys(); 
-  while(keysEnum.hasMoreElements()){
-    char k = keysEnum.nextElement();
-    char pk = prevKeysEnum.nextElement();
-    println(k + " " + pk);
-    if(!keys.get(k) && keys.get(k) != prevKeys.get(pk)){
-      for(int i = 0; i < buttons.length; i++){
-        if(buttons[i].inKey == k){
-          if(k == undoBind){
-            buttons[mostRecentUpdated].decrementCounter();
-            mostRecentUpdated = -1;
-          } else {
-            buttons[i].incrementCounter();
-            mostRecentUpdated = i;
+
+  for(int i = 0; i < keysPressed.length; i++){
+    if(keysPressed[i][0] && !keysPressed[i][1]){ //key was released
+      if(i < keyBinds.length){
+        buttons[i].incrementCounter();
+        mostRecentUpdated = i;
+      }
+      if(i == keyBinds.length){
+        if(mostRecentUpdated != -1){
+          //check if any keys are being pressed other than z
+          boolean anyPressed = false;
+          for(int j = 0; j < keyBinds.length; j++){
+            if(keysPressed[j][0]){
+              anyPressed = true;
+              break;
+            }
           }
+          if(!anyPressed) buttons[mostRecentUpdated].decrementCounter();
         }
+      }
+      if(i == keyBinds.length + 1){
+        setup();
       }
     }
   }
@@ -114,7 +103,16 @@ void draw(){
   textAlign(RIGHT);
   text(frameRate, width - 5, height - 5);
 
-  prevKeys = new Hashtable<Character, Boolean>(keys);
+  for(int i = 0; i < keysPressed.length; i++){
+    keysPressed[i][1] = keysPressed[i][0];
+  }
+  if(mostRecentUpdated != -1 && mostRecentUpdated < buttons.length){
+    for(int i = 0; i < buttons.length; i++){
+      if(i == mostRecentUpdated) continue;
+      buttons[i].undoMode = false;
+    }
+    buttons[mostRecentUpdated].undoMode = true;
+  } 
 }
 
 void mousePressed(){
@@ -136,8 +134,7 @@ void mouseReleased(){
       } else {
         buttons[i].decrementCounter();
       }
-      buttons[i].undoMode = true;
-      if(mostRecentUpdated != -1 && mostRecentUpdated != i) buttons[mostRecentUpdated].undoMode = false;
+      
       mostRecentUpdated = i;
       break;
     }
@@ -152,17 +149,19 @@ void mouseReleased(){
 
 void keyPressed(){
   if(!start) return;
-  for(int i = 0; i < keys.size(); i++){
+  for(int i = 0; i < keysPressed.length; i++){
     if(i < keyBinds.length){
+      if(buttons[i].mouseDown() != 0) continue;
       if(key == keyBinds[i]){
-        keys.replace(keyBinds[i], true);
+        keysPressed[i][0] = true;
       }
-    }
-    if(key == undoBind){
-      keys.replace(undoBind, true);
-    }
-    if(key == resetBind){
-      keys.replace(resetBind, true);
+    } else {
+      if(key == undoBind && !(mousePressed && mouseButton == RIGHT)){
+        keysPressed[keyBinds.length][0] = true;
+      }
+      if(key == resetBind && resetButton.mouseDown() != 0){
+        keysPressed[keyBinds.length + 1][0] = true;
+      }
     }
   }
 }
@@ -171,17 +170,19 @@ void keyReleased(){
     start = true;
   }
   if(!start) return;
-  for(int i = 0; i < keys.size(); i++){
+  for(int i = 0; i < keysPressed.length; i++){
     if(i < keyBinds.length){
+      if(buttons[i].mouseDown() != 0) continue;
       if(key == keyBinds[i]){
-        keys.replace(keyBinds[i], false);
+        keysPressed[i][0] = false;
       }
-    }
-    if(key == undoBind){
-      keys.replace(undoBind, false);
-    }
-    if(key == resetBind){
-      keys.replace(resetBind, false);
+    } else {
+      if(key == undoBind && !(mousePressed && mouseButton == RIGHT)){
+        keysPressed[i][0] = false;
+      }
+      if(key == resetBind && resetButton.mouseDown() != 0){
+        keysPressed[i][0] = false;
+      }
     }
   }
 }
