@@ -36,8 +36,11 @@ class Button{
   }
 
   public int kbPressed(){
-    for(int i = 0; i < keyBinds.length; i++){
-      if(keyBinds[i] == inKey && keysPressed[i][0]) return 1;
+    for(int i = 0; i < keysPressed.length; i++){
+      if(i < keyBinds.length){
+        if(keyBinds[i] == inKey && keysPressed[i][0]) return 1;
+      }
+      if(i == keyBinds.length + 1 && keysPressed[i][0]) return 1;
     }
     if(keyPressed && key == 'z' && undoMode) return 2;
     return 0;

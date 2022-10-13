@@ -11,8 +11,8 @@ int mostRecentUpdated = -1;
 Button resetButton;
 Button[] buttons = new Button[8];
 
-color autoColor = color(50, 255, 100);
-color teleColor = color(0, 255, 255);
+color autoColor = color(252, 210, 210);
+color teleColor = color(252);
 
 boolean start = false; 
 
@@ -21,7 +21,7 @@ int pressedX, pressedY;
 
 void setup(){
   //fullScreen();
-  size(1200, 800);
+  size(600, 400);
   frameRate(240);
   
   int padding = 45;
@@ -93,7 +93,7 @@ void draw(){
     fill(0, 0, 0, 100);
     rect(0, 0, width, height);
     fill(255);
-    textSize(140);
+    textSize(width / 9);
     textAlign(CENTER);
     text("Press SPACE to start", width / 2, height / 2 );
   }
@@ -102,7 +102,6 @@ void draw(){
   textSize(20);
   textAlign(RIGHT);
   text(frameRate, width - 5, height - 5);
-
   for(int i = 0; i < keysPressed.length; i++){
     keysPressed[i][1] = keysPressed[i][0];
   }
@@ -126,7 +125,6 @@ void mousePressed(){
 
 void mouseReleased(){
   if(!start) return;
-  
   for(int i = 0; i < buttons.length; i++){
     if(buttons[i].mouseDown() != 0){
       if(buttons[i].mouseDown() == 1){
@@ -155,14 +153,13 @@ void keyPressed(){
       if(key == keyBinds[i]){
         keysPressed[i][0] = true;
       }
-    } else {
-      if(key == undoBind && !(mousePressed && mouseButton == RIGHT)){
-        keysPressed[keyBinds.length][0] = true;
-      }
-      if(key == resetBind && resetButton.mouseDown() != 0){
-        keysPressed[keyBinds.length + 1][0] = true;
-      }
-    }
+    } 
+  }
+  if(key == undoBind && !(mousePressed && mouseButton == RIGHT)){
+    keysPressed[keyBinds.length][0] = true;
+  }
+  if(key == resetBind && !mousePressed){
+    keysPressed[keyBinds.length + 1][0] = true;
   }
 }
 void keyReleased(){
@@ -180,10 +177,11 @@ void keyReleased(){
       if(key == undoBind && !(mousePressed && mouseButton == RIGHT)){
         keysPressed[i][0] = false;
       }
-      if(key == resetBind && resetButton.mouseDown() != 0){
-        keysPressed[i][0] = false;
-      }
     }
+  }
+  if(key == resetBind && !mousePressed){
+    resetButton.incrementCounter();
+    keysPressed[keyBinds.length + 1][0] = false;
   }
 }
 
