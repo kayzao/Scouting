@@ -6,6 +6,8 @@ class Button{
   int textSize, rounding, lastUpdate;
   color fillColor = teleColor;
   color textColor = color(0);
+  color overlayColor = color(255, 255, 255, 120);
+  color delOverlayColor = color(255, 0, 0, 120);
   boolean helpMode, undoMode, showCount, showBorder;
   
   public Button(int x, int y, int w, int h, char inKey, boolean enableHelp){
@@ -70,10 +72,10 @@ class Button{
     textAlign(LEFT);
     
     if(mouseDown() == 1 || kbPressed() == 1){ //overlays gray cover to shade button
-      fill(255, 255, 255, 120);
+      fill(overlayColor);
       rect(x, y, w, h, rounding);
     } else if(mouseDown() == 2 || kbPressed() == 2){ //overlays red cover to shade button
-      fill(255, 0, 0, 120);
+      fill(delOverlayColor);
       rect(x, y, w, h, rounding);
     }
   }

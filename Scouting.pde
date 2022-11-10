@@ -13,6 +13,7 @@ Button[] buttons = new Button[8];
 
 color autoColor = color(252, 210, 210);
 color teleColor = color(252);
+color secondaryOverlayColor = color(120, 255, 100, 150);
 
 boolean start = false; 
 
@@ -36,7 +37,11 @@ void setup(){
     }
     buttons[i] = new Button(x, y, w, h, keyBinds[i], true);
     buttons[i].setName(names[i % 4]);
-    if(i < 4) buttons[i].fillColor = autoColor;
+    if(i < 4){
+      buttons[i].fillColor = autoColor;
+    } else {
+      buttons[i].overlayColor = secondaryOverlayColor;
+    }
     x += w + padding;
   }
   
