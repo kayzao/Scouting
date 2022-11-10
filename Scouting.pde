@@ -1,3 +1,5 @@
+import processing.sound.*;
+
 import java.util.*;
 
 char[] keyBinds = { 'a', 's', 'd', 'f', //keybinds for auto hits/misses and teleop hits/misses
@@ -20,10 +22,15 @@ boolean start = false;
 boolean mouseDown = false;
 int pressedX, pressedY;
 
+SinOsc soundOsc;
+float addFreq = 659.3, delFreq = 440, volume = 0.5;
+int startSoundFrame, fps;
+
 void setup(){
   //fullScreen();
   size(600, 400);
-  frameRate(240);
+  int fps = 240;
+  frameRate(fps);
   
   int padding = 45;
   int x = padding;
@@ -50,6 +57,12 @@ void setup(){
   resetButton.showBorder = false;
   resetButton.name = "RESET";
   resetButton.showCount = false;
+  
+  soundOsc = new SinOsc(this);
+  soundOsc.play();
+  soundOsc.amp(volume);
+  
+  startSoundFrame = -fps;
 }
 
 void draw(){
@@ -67,6 +80,9 @@ void draw(){
       if(i < keyBinds.length){
         buttons[i].incrementCounter();
         mostRecentUpdated = i;
+        soundOsc.freq(addFreq);
+        
+        startSoundFrame = frameCount;
       }
       if(i == keyBinds.length){
         if(mostRecentUpdated != -1){
@@ -78,7 +94,12 @@ void draw(){
               break;
             }
           }
-          if(!anyPressed) buttons[mostRecentUpdated].decrementCounter();
+          if(!anyPressed){
+            buttons[mostRecentUpdated].decrementCounter();
+            soundOsc.freq(delFreq);
+            
+            startSoundFrame = frameCount;
+          }
         }
       }
       if(i == keyBinds.length + 1){
@@ -117,6 +138,14 @@ void draw(){
     }
     buttons[mostRecentUpdated].undoMode = true;
   } 
+  println(startSoundFrame + " " + frameCount);
+  if(startSoundFrame > frameCount - (5 * fps)){
+    //soundOsc.amp(volume);
+    println("lmao");
+  } else {
+    //soundOsc.freq(0);
+    //soundOsc.stop();
+  }
 }
 
 void mousePressed(){
